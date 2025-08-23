@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MoneyMap</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; color: #333; }
+        .container { max-width: 960px; margin: 0 auto; padding: 20px; }
+        h1 { margin-bottom: 8px; }
+        .subtitle { color: #666; margin-bottom: 24px; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card h3 { font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 8px; }
+        .card .value { font-size: 28px; font-weight: 600; }
+        .card .value.positive { color: #2e7d32; }
+        .card .value.negative { color: #c62828; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #fafafa; font-weight: 600; font-size: 13px; text-transform: uppercase; color: #666; }
+        #error { color: #c62828; margin: 12px 0; display: none; }
+        .controls { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; }
+        select, button { padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; }
+        button { background: #1976d2; color: #fff; border: none; cursor: pointer; }
+        button:hover { background: #1565c0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MoneyMap</h1>
+        <p class="subtitle">Income &amp; expense analytics</p>
+
+        <div class="controls">
+            <select id="year">
+                <option value="2025" selected>2025</option>
+            </select>
+            <select id="month">
+                <option value="">Full year</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+            <button onclick="loadData()">Load</button>
+        </div>
+
+        <div id="error"></div>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Income</h3>
+                <div class="value positive" id="income">--</div>
+            </div>
+            <div class="card">
+                <h3>Expenses</h3>
+                <div class="value negative" id="expense">--</div>
+            </div>
+            <div class="card">
+                <h3>Net</h3>
+                <div class="value" id="net">--</div>
+            </div>
+        </div>
+
+        <h2 style="margin-bottom: 12px;">Recent Transactions</h2>
+        <table>
+            <thead>
+                <tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th></tr>
+            </thead>
+            <tbody id="txn-body">
+                <tr><td colspan="4" style="text-align:center;color:#999;">Click Load to fetch data</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function fmt(n) {
+            return '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        async function loadData() {
+            const year = document.getElementById('year').value;
+            const month = document.getElementById('month').value;
+            const errEl = document.getElementById('error');
+            errEl.style.display = 'none';
+
+            try {
+                let url = month
+                    ? '/api/analytics/monthly?year=' + year + '&month=' + month
+                    : '/api/analytics/yearly?year=' + year;
+                const resp = await fetch(url);
+                const data = await resp.json();
+
+                document.getElementById('income').textContent = fmt(data.income);
+                document.getElementById('expense').textContent = fmt(data.expense);
+
+                const netEl = document.getElementById('net');
+                netEl.textContent = fmt(data.net);
+                netEl.className = 'value ' + (data.net >= 0 ? 'positive' : 'negative');
+
+                // load txns
+                let txnUrl = '/api/transactions/?year=' + year;
+                if (month) txnUrl += '&month=' + month;
+                const txnResp = await fetch(txnUrl);
+                const txnData = await txnResp.json();
+
+                const tbody = document.getElementById('txn-body');
+                if (txnData.transactions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;">No transactions</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = txnData.transactions.map(function(t) {
+                    return '<tr><td>' + t.date + '</td><td>' + t.txn_type + '</td><td>' + t.category + '</td><td>' + fmt(t.amount) + '</td></tr>';
+                }).join('');
+            } catch (e) {
+                errEl.textContent = 'Failed to load data: ' + e.message;
+                errEl.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
