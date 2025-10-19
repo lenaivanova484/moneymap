@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from enum import Enum
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -13,6 +14,7 @@ class TransactionCreate(BaseModel):
     txn_type: TxnType
     category: str
     description: str = ""
+    tags: list[str] = []
     date: date = Field(default_factory=date.today)
 
 
@@ -43,3 +45,9 @@ class AnalyticsResponse(BaseModel):
     expense: float
     net: float
     by_category: list[CategoryBreakdown]
+
+
+class TagGroup(BaseModel):
+    tag: str
+    total: float
+    count: int
