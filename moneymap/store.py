@@ -34,11 +34,13 @@ def insert_transaction(data: dict) -> dict:
 def get_transactions(
     txn_type: str | None = None,
     category: str | None = None,
+    tag: str | None = None,
     year: int | None = None,
     month: int | None = None,
 ) -> list[dict]:
     db = get_db()
     table = db.table("transactions")
+    Txn = Query()
 
     results = table.all()
 
@@ -46,12 +48,15 @@ def get_transactions(
         results = [r for r in results if r.get("txn_type") == txn_type]
     if category:
         results = [r for r in results if r.get("category") == category]
+    if tag:
+        results = [r for r in results if tag in r.get("tags", [])]
     if year:
         results = [r for r in results if r.get("date", "").startswith(str(year))]
     if month and year:
         prefix = f"{year}-{month:02d}"
         results = [r for r in results if r.get("date", "").startswith(prefix)]
 
+    # attach doc_id as id
     for r in results:
         if "id" not in r:
             r["id"] = r.doc_id if hasattr(r, "doc_id") else 0
