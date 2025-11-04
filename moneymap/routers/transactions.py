@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 
 from moneymap.models import TransactionCreate, Transaction
@@ -19,12 +19,14 @@ def create_transaction(txn: TransactionCreate):
 def list_transactions(
     txn_type: Optional[str] = None,
     category: Optional[str] = None,
+    tag: Optional[str] = None,
     year: Optional[int] = None,
     month: Optional[int] = None,
 ):
     txns = store.get_transactions(
         txn_type=txn_type,
         category=category,
+        tag=tag,
         year=year,
         month=month,
     )
