@@ -1,9 +1,9 @@
 from collections import defaultdict
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from typing import Optional
 
 from moneymap import store
-from moneymap.models import AnalyticsResponse, CategoryBreakdown, MonthlySummary
+from moneymap.models import AnalyticsResponse, CategoryBreakdown, MonthlySummary, TagGroup
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
@@ -79,3 +79,25 @@ def monthly_summary(year: int) -> list[MonthlySummary]:
             txn_count=len(txns),
         ))
     return out
+
+
+@router.get("/tags")
+def tag_analytics(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    txn_type: Optional[str] = None,
+) -> list[TagGroup]:
+    txns = store.get_transactions(year=year, month=month, txn_type=txn_type)
+
+    tag_totals: dict[str, float] = defaultdict(float)
+    tag_counts: dict[str, int] = defaultdict(int)
+
+    for t in txns:
+        for tag in t.get("tags", []):
+            tag_totals[tag] += t["amount"]
+            tag_counts[tag] += 1
+
+    return [
+        TagGroup(tag=tag, total=round(total, 2), count=tag_counts[tag])
+        for tag, total in sorted(tag_totals.items(), key=lambda x: -x[1])
+    ]
