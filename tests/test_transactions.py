@@ -18,9 +18,11 @@ def test_create_expense(client):
         "amount": 49.99,
         "txn_type": "expense",
         "category": "utilities",
+        "tags": ["electric"],
         "date": "2025-09-05",
     })
     assert resp.status_code == 201
+    assert resp.json()["tags"] == ["electric"]
 
 
 def test_invalid_amount(client):
@@ -46,6 +48,19 @@ def test_filter_by_type(client, sample_income, sample_expense):
     assert data["transactions"][0]["txn_type"] == "income"
 
 
+def test_filter_by_tag(client, sample_income, sample_expense):
+    resp = client.get("/api/transactions/?tag=food")
+    data = resp.json()
+    assert data["count"] == 1
+    assert data["transactions"][0]["category"] == "groceries"
+
+
+def test_filter_by_category(client, sample_income, sample_expense):
+    resp = client.get("/api/transactions/?category=salary")
+    data = resp.json()
+    assert data["count"] == 1
+
+
 def test_get_single_transaction(client, sample_income):
     txn_id = sample_income["id"]
     resp = client.get(f"/api/transactions/{txn_id}")
@@ -64,4 +79,9 @@ def test_delete_transaction(client, sample_expense):
     assert resp.status_code == 204
 
     resp = client.get(f"/api/transactions/{txn_id}")
+    assert resp.status_code == 404
+
+
+def test_delete_missing(client):
+    resp = client.delete("/api/transactions/999")
     assert resp.status_code == 404

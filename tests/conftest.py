@@ -1,6 +1,7 @@
 import os
 import pytest
 
+# use a temp db for tests
 os.environ["MONEYMAP_DB"] = "/tmp/moneymap_test.json"
 
 from fastapi.testclient import TestClient
@@ -29,6 +30,7 @@ def sample_income(client):
         "txn_type": "income",
         "category": "salary",
         "description": "Monthly paycheck",
+        "tags": ["work", "recurring"],
         "date": "2025-10-15",
     })
     return resp.json()
@@ -41,6 +43,7 @@ def sample_expense(client):
         "txn_type": "expense",
         "category": "groceries",
         "description": "Weekly groceries",
+        "tags": ["food", "recurring"],
         "date": "2025-10-18",
     })
     return resp.json()

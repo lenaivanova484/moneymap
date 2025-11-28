@@ -30,14 +30,37 @@ def test_category_breakdown(client, sample_income, sample_expense):
     assert "salary" in names
     assert "groceries" in names
 
+    # check percentages add up roughly
+    total_pct = sum(c["percentage"] for c in cats)
+    assert 99.9 < total_pct < 100.1
+
 
 def test_yearly_summary(client, sample_income, sample_expense):
     resp = client.get("/api/analytics/summary?year=2025")
     assert resp.status_code == 200
     data = resp.json()
+    # should have one month with data
     assert len(data) == 1
     assert data[0]["month"] == 10
     assert data[0]["txn_count"] == 2
+
+
+def test_tag_analytics(client, sample_income, sample_expense):
+    resp = client.get("/api/analytics/tags?year=2025")
+    data = resp.json()
+    tags = {t["tag"]: t for t in data}
+    assert "recurring" in tags
+    assert tags["recurring"]["count"] == 2
+    assert tags["work"]["count"] == 1
+    assert tags["food"]["count"] == 1
+
+
+def test_tag_analytics_with_type_filter(client, sample_income, sample_expense):
+    resp = client.get("/api/analytics/tags?year=2025&txn_type=expense")
+    data = resp.json()
+    tags = {t["tag"]: t for t in data}
+    assert "food" in tags
+    assert "work" not in tags
 
 
 def test_dashboard_loads(client):
