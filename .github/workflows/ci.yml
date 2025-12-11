@@ -20,5 +20,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
+      - name: Run linter
+        run: ruff check moneymap/ tests/
       - name: Run tests
         run: pytest -v
