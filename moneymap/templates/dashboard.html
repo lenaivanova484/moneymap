@@ -19,6 +19,7 @@
         table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #fafafa; font-weight: 600; font-size: 13px; text-transform: uppercase; color: #666; }
+        .tag { display: inline-block; background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; }
         #error { color: #c62828; margin: 12px 0; display: none; }
         .controls { margin-bottom: 20px; display: flex; gap: 12px; align-items: center; }
         select, button { padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; }
@@ -33,7 +34,8 @@
 
         <div class="controls">
             <select id="year">
-                <option value="2025" selected>2025</option>
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
             </select>
             <select id="month">
                 <option value="">Full year</option>
@@ -73,10 +75,10 @@
         <h2 style="margin-bottom: 12px;">Recent Transactions</h2>
         <table>
             <thead>
-                <tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th></tr>
+                <tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Tags</th></tr>
             </thead>
             <tbody id="txn-body">
-                <tr><td colspan="4" style="text-align:center;color:#999;">Click Load to fetch data</td></tr>
+                <tr><td colspan="5" style="text-align:center;color:#999;">Click Load to fetch data</td></tr>
             </tbody>
         </table>
     </div>
@@ -114,11 +116,14 @@
 
                 const tbody = document.getElementById('txn-body');
                 if (txnData.transactions.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;">No transactions</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;">No transactions</td></tr>';
                     return;
                 }
                 tbody.innerHTML = txnData.transactions.map(function(t) {
-                    return '<tr><td>' + t.date + '</td><td>' + t.txn_type + '</td><td>' + t.category + '</td><td>' + fmt(t.amount) + '</td></tr>';
+                    var tagHtml = (t.tags || []).map(function(tag) {
+                        return '<span class="tag">' + tag + '</span>';
+                    }).join('');
+                    return '<tr><td>' + t.date + '</td><td>' + t.txn_type + '</td><td>' + t.category + '</td><td>' + fmt(t.amount) + '</td><td>' + tagHtml + '</td></tr>';
                 }).join('');
             } catch (e) {
                 errEl.textContent = 'Failed to load data: ' + e.message;
