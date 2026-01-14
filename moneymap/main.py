@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 from moneymap.routers import transactions, analytics
 
-app = FastAPI(title="MoneyMap", version="0.1.0")
+app = FastAPI(title="MoneyMap", version="0.2.0")
 
 app.include_router(transactions.router)
 app.include_router(analytics.router)

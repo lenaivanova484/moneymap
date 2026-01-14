@@ -2,7 +2,7 @@
 
 Income and expense analytics API built with FastAPI and TinyDB.
 
-Track transactions, categorize spending, and view analytics breakdowns by month, year, or category.
+Track transactions, categorize spending, and view analytics breakdowns by month, year, category, or tag.
 
 ## Quickstart
 
@@ -18,7 +18,7 @@ Open http://localhost:8000 for the dashboard, or http://localhost:8000/docs for 
 ### Transactions
 
 - `POST /api/transactions/` - create a transaction
-- `GET /api/transactions/` - list with optional filters (`txn_type`, `category`, `year`, `month`)
+- `GET /api/transactions/` - list with optional filters (`txn_type`, `category`, `tag`, `year`, `month`)
 - `GET /api/transactions/{id}` - get single transaction
 - `DELETE /api/transactions/{id}` - delete a transaction
 
@@ -27,6 +27,7 @@ Open http://localhost:8000 for the dashboard, or http://localhost:8000/docs for 
 - `GET /api/analytics/monthly?year=2025&month=10` - monthly breakdown
 - `GET /api/analytics/yearly?year=2025` - yearly breakdown
 - `GET /api/analytics/summary?year=2025` - month-by-month summary
+- `GET /api/analytics/tags?year=2025` - tag-based grouping
 
 ## Transaction format
 
@@ -36,6 +37,7 @@ Open http://localhost:8000 for the dashboard, or http://localhost:8000/docs for 
   "txn_type": "expense",
   "category": "groceries",
   "description": "Weekly shopping",
+  "tags": ["food", "recurring"],
   "date": "2025-10-18"
 }
 ```
