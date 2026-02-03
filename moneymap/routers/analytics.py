@@ -9,6 +9,9 @@ router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 
 def _category_breakdown(txns: list[dict]) -> list[CategoryBreakdown]:
+    if not txns:
+        return []
+
     totals: dict[str, float] = defaultdict(float)
     counts: dict[str, int] = defaultdict(int)
 
