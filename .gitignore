@@ -16,3 +16,4 @@ db.json
 .mypy_cache/
 htmlcov/
 .coverage
+setup_history.sh
